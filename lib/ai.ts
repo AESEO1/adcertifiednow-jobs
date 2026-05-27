@@ -9,7 +9,8 @@ export async function isAIAvailable(): Promise<boolean> {
 }
 
 export async function promptAI(prompt: string): Promise<string> {
-  const session = await window.ai!.languageModel.create()
+  if (!window.ai) throw new Error('AI API not available')
+  const session = await window.ai.languageModel.create()
   try {
     return await session.prompt(prompt)
   } finally {
@@ -18,17 +19,23 @@ export async function promptAI(prompt: string): Promise<string> {
 }
 
 export async function streamAI(prompt: string): Promise<ReadableStream> {
-  const session = await window.ai!.languageModel.create()
+  if (!window.ai) throw new Error('AI API not available')
+  const session = await window.ai.languageModel.create()
   const stream = session.promptStreaming(prompt)
   const reader = stream.getReader()
   return new ReadableStream({
     async pull(controller) {
-      const { done, value } = await reader.read()
-      if (done) {
-        controller.close()
+      try {
+        const { done, value } = await reader.read()
+        if (done) {
+          controller.close()
+          session.destroy()
+        } else {
+          controller.enqueue(value)
+        }
+      } catch (error) {
         session.destroy()
-      } else {
-        controller.enqueue(value)
+        controller.error(error)
       }
     },
     cancel() {
