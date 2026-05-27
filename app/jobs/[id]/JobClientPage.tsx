@@ -17,6 +17,7 @@ import JobSummary from "@/components/ai/JobSummary"
 import SkillsBadges from "@/components/ai/SkillsBadges"
 import SeniorityBadge from "@/components/ai/SeniorityBadge"
 import { CVMatcherButton, CVMatcherCard } from "@/components/ai/CVMatcher"
+import { isAIAvailable, promptAI } from "@/lib/ai"
 
 interface JobClientPageProps {
   params: { id: string }
@@ -65,29 +66,39 @@ export default function JobClientPage({ params, initialJob }: JobClientPageProps
 
   useEffect(() => {
     if (job.salary_display || !job.description) return
-    import('@/lib/ai').then(async ({ isAIAvailable, promptAI }) => {
-      if (!(await isAIAvailable())) return
+    let cancelled = false
+    async function run() {
+      const available = await isAIAvailable()
+      if (!available || cancelled) return
       try {
         const result = await promptAI(
           `Find any salary, pay rate, or compensation mentioned in this text. Return it in a short format like '£30k - £40k per year' or '$25 per hour'. Return the word null if none found. Text: ${job.description!.substring(0, 2000)}`
         )
+        if (cancelled) return
         if (result.trim().toLowerCase() !== 'null') setAiSalary(result.trim())
       } catch { /* silent */ }
-    })
+    }
+    run()
+    return () => { cancelled = true }
   }, [job.description, job.salary_display])
 
   useEffect(() => {
     if (!job.description) return
-    import('@/lib/ai').then(async ({ isAIAvailable, promptAI }) => {
-      if (!(await isAIAvailable())) return
+    let cancelled = false
+    async function run() {
+      const available = await isAIAvailable()
+      if (!available || cancelled) return
       try {
         const result = await promptAI(
           `Does this job allow remote work? Reply with exactly one word: Remote, Hybrid, or On-site. Description: ${job.description!.substring(0, 2000)}`
         )
+        if (cancelled) return
         const word = result.trim().split(/\s/)[0]
         if (['Remote', 'Hybrid', 'On-site'].includes(word)) setAiRemote(word)
       } catch { /* silent */ }
-    })
+    }
+    run()
+    return () => { cancelled = true }
   }, [job.description])
 
   return (
