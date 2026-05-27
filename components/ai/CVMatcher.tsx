@@ -14,7 +14,9 @@ export function CVMatcherButton() {
   const [show, setShow] = useState(false)
 
   useEffect(() => {
-    isAIAvailable().then(setShow)
+    let cancelled = false
+    isAIAvailable().then((v) => { if (!cancelled) setShow(v) })
+    return () => { cancelled = true }
   }, [])
 
   if (!show) return null
@@ -41,7 +43,9 @@ export function CVMatcherCard({ jobDescription, jobTitle }: CVMatcherProps) {
   const cancelRef = useRef(false)
 
   useEffect(() => {
-    isAIAvailable().then(setShow)
+    let cancelled = false
+    isAIAvailable().then((v) => { if (!cancelled) setShow(v) })
+    return () => { cancelled = true }
   }, [])
 
   if (!show) return null

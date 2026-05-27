@@ -25,11 +25,13 @@ export default function AISearchBar({ initialQuery = '', initialLocation = '', o
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    let cancelled = false
     async function run() {
       const available = await isAIAvailable()
-      setAiAvailable(available)
+      if (!cancelled) setAiAvailable(available)
     }
     run()
+    return () => { cancelled = true }
   }, [])
 
   async function expandKeywords(keywords: string): Promise<string> {
