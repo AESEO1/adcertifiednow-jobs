@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +18,31 @@ import SkillsBadges from "@/components/ai/SkillsBadges"
 import SeniorityBadge from "@/components/ai/SeniorityBadge"
 import { CVMatcherButton, CVMatcherCard } from "@/components/ai/CVMatcher"
 import { isAIAvailable, promptAI } from "@/lib/ai"
+
+function AdUnit() {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (ref.current && ref.current.querySelector('.adsbygoogle')) {
+      try { (window.adsbygoogle = window.adsbygoogle || []).push({}) } catch {}
+    }
+  }, [])
+  return (
+    <div ref={ref} style={{ margin: "8px 0" }}>
+      <ins
+        className="adsbygoogle"
+        style={{ display: "block" }}
+        data-ad-client="ca-pub-7602718446103605"
+        data-ad-slot="8796468638"
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      />
+    </div>
+  )
+}
+
+declare global {
+  interface Window { adsbygoogle: unknown[] }
+}
 
 interface JobClientPageProps {
   params: { id: string }
@@ -230,6 +255,8 @@ export default function JobClientPage({ params, initialJob }: JobClientPageProps
                 </CardContent>
               </Card>
 
+              <AdUnit />
+
               {job.description && <JobSummary description={job.description} />}
               {job.description && <CVMatcherButton />}
 
@@ -242,10 +269,21 @@ export default function JobClientPage({ params, initialJob }: JobClientPageProps
                   </h2>
                 </CardHeader>
                 <CardContent>
-                  <div
-                    style={{ color: "#374151", lineHeight: "1.625", fontSize: "16px" }}
-                    dangerouslySetInnerHTML={{ __html: formatJobDescriptionHTML(stripHtml(job.description)) }}
-                  />
+                  {(() => {
+                    const html = formatJobDescriptionHTML(stripHtml(job.description))
+                    const mid = Math.floor(html.length / 2)
+                    const splitAt = html.indexOf("</p>", mid)
+                    const breakPoint = splitAt !== -1 ? splitAt + 4 : mid
+                    const first = html.slice(0, breakPoint)
+                    const second = html.slice(breakPoint)
+                    return (
+                      <>
+                        <div style={{ color: "#374151", lineHeight: "1.625", fontSize: "16px" }} dangerouslySetInnerHTML={{ __html: first }} />
+                        <AdUnit />
+                        <div style={{ color: "#374151", lineHeight: "1.625", fontSize: "16px" }} dangerouslySetInnerHTML={{ __html: second }} />
+                      </>
+                    )
+                  })()}
                 </CardContent>
               </Card>
 
@@ -279,6 +317,8 @@ export default function JobClientPage({ params, initialJob }: JobClientPageProps
                   )}
                 </CardContent>
               </Card>
+              <AdUnit />
+
               {job.description && (
                 <CVMatcherCard jobDescription={job.description} jobTitle={job.title || 'this job'} />
               )}
