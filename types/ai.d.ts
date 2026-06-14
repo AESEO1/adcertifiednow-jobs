@@ -5,7 +5,7 @@ interface AILanguageModelSession {
 }
 
 interface AILanguageModel {
-  availability(): Promise<'available' | 'downloading' | 'unavailable'>
+  availability(): Promise<'available' | 'readily' | 'downloading' | 'after-download' | 'unavailable' | 'no'>
   create(options?: { systemPrompt?: string }): Promise<AILanguageModelSession>
 }
 

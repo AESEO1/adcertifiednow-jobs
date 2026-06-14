@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+Disallow: /post-job/success
+Disallow: /admin/
+Disallow: /go/
+Disallow: /*.json$

@@ -1,0 +1,31 @@
+import { createClient } from "@supabase/supabase-js"
+import { readFileSync } from "node:fs"
+
+const envRaw = readFileSync(".env.local", "utf8")
+for (const line of envRaw.split(/\r?\n/)) {
+  const m = line.match(/^([^#=\s]+)=(.*)$/)
+  if (m) process.env[m[1]] = m[2].replace(/^"|"$/g, "")
+}
+
+const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+
+const { count: total } = await sb.from("USJobs1").select("id", { count: "exact", head: true }).eq("country", "GB")
+console.log("GB total:", total)
+
+const { data } = await sb.from("USJobs1").select("state,city").eq("country", "GB").limit(50000)
+const stateCounts = new Map()
+const cityStateCounts = new Map()
+for (const r of data || []) {
+  const s = (r.state || "").trim()
+  if (s) stateCounts.set(s, (stateCounts.get(s) || 0) + 1)
+  const c = (r.city || "").trim()
+  if (s && c) {
+    const k = `${c}|${s}`
+    cityStateCounts.set(k, (cityStateCounts.get(k) || 0) + 1)
+  }
+}
+console.log("\ntop 25 GB states:")
+for (const [s, n] of [...stateCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 25)) console.log(`  ${n}\t${s}`)
+
+console.log("\ntop 20 GB city,state:")
+for (const [k, n] of [...cityStateCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20)) console.log(`  ${n}\t${k}`)

@@ -198,9 +198,9 @@ function SearchContent({ searchParams, initialJobs, initialHasNextPage, hideHero
               </div>
             )}
           </>
-        ) : searchParams.q ? (
+        ) : searchParams.q || searchParams.city || searchParams.state ? (
           <div className="text-center py-12">
-            <p className="text-gray-600 text-lg">No jobs found for "{searchParams.q}"</p>
+            <p className="text-gray-600 text-lg">No jobs found{searchParams.q ? ` for "${searchParams.q}"` : ''}{searchParams.city ? ` in ${searchParams.city}${searchParams.state ? `, ${searchParams.state}` : ''}` : ''}</p>
             <p className="text-gray-500 mt-2">Try different keywords or browse all available jobs</p>
           </div>
         ) : (

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx vercel env ls production)",
+      "Bash(npx vercel env rm REVALIDATION_SECRET production --yes)",
+      "Bash(printf \"1b78eacb10fc8af7a1dc0de043e183193a05462760115343b94620f8532e7a79\")",
+      "Bash(git add app/jobs/\\\\[id\\\\]/JobClientPage.tsx app/jobs/\\\\[id\\\\]/page.tsx lib/structured-data.ts)"
+    ]
+  }
+}
